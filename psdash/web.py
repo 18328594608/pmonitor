@@ -121,7 +121,6 @@ def index():
         'page': 'overview',
         'is_xhr': request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     }
-    print(data)
     return render_template('index.html', **data)
 
 
@@ -143,7 +142,6 @@ def processes(sort='pid', order='asc', filter='user'):
         reverse=True if order != 'asc' else False
     )
 
-    print(procs)
     return render_template(
         'processes.html',
         processes=procs,
@@ -274,16 +272,22 @@ def view_disks():
 
 @webapp.route('/logs')
 def view_logs():
-    available_logs = current_service.get_logs()
-    available_logs.sort(cmp=lambda x1, x2: locale.strcoll(x1['path'], x2['path']))
+    config = current_service.get_config()
+    arena_http_io = config.get_arena_io()
+    servant_io =  config.get_servant_io()
+    data_list = []
+    for value in arena_http_io:
+        print(value)
 
+    for monitor in servant_io:
+        data = current_service.get_http().fetch_data_get(monitor.get("monitor_io"))
+        data_list.append(data)
+
+    print(data_list)
     return render_template(
-        'logs.html',
-        page='logs',
-        logs=available_logs,
-        is_xhr=request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        'matchengine.html',
+        data_list=data_list
     )
-
 
 @webapp.route('/log')
 def view_log():

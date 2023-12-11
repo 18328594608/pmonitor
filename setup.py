@@ -19,11 +19,8 @@ setup(
         'Intended Audience :: System Administrators'
     ],
     keywords='linux web dashboard',
-    author='Joakim Hamrén',
-    author_email='joakim.hamren@gmail.com',
-    url='https://github.com/Jahaja/psdash',
     license='CC0',
-    packages=find_packages(exclude=['tests']),
+    ##packages=find_packages(exclude=['tests']),
     include_package_data=True,
     zip_safe=False,
     install_requires=[
@@ -33,10 +30,11 @@ setup(
         'gevent==20.6.2',
         'zerorpc==0.6.1',
         'netifaces==0.11.0',
-        'argparse'
+        'argparse',
+        'requests'
     ],
-    test_suite='tests',
-    tests_require=['unittest2'],
+    ##test_suite='tests',
+    ##tests_require=['unittest2'],
     entry_points={
         'console_scripts': [
             'psdash = psdash.run:main'

@@ -6,6 +6,10 @@ import psutil
 import socket
 import time
 import zerorpc
+import json
+import requests
+
+
 from psdash.log import Logs
 from psdash.helpers import socket_families, socket_types
 from psdash.net import get_interface_addresses, NetIOCounters
@@ -13,6 +17,34 @@ from psdash.net import get_interface_addresses, NetIOCounters
 
 logger = logging.getLogger("psdash.node")
 
+
+class ConfigReader:
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.config_data = self.read_config()
+
+    def read_config(self):
+        with open(self.file_path, 'r') as file:
+            data = json.load(file)
+            return data
+
+    def get_arena_io(self):
+        return self.config_data.get('arena_io', [])
+    def get_servant_io(self):
+        return self.config_data.get('servant_io', [])
+
+class HttpDataFetcher:
+    def __init__(self):
+        self.url = ''
+
+    def fetch_data_get(self, url):
+        self.url = url
+        response = requests.get(self.url)
+        return response.text
+    def fetch_data_post(self, url):
+        self.url = url
+        response = requests.post(self.url)
+        return response.text
 
 class Node(object):
     def __init__(self):
@@ -69,6 +101,7 @@ class LocalNode(Node):
 class LocalService(object):
     def __init__(self, node):
         self.node = node
+        self.http = HttpDataFetcher()
 
     def get_sysinfo(self):
         uptime = int(time.time() - psutil.boot_time())
@@ -157,7 +190,7 @@ class LocalService(object):
         process_list = []
         for p in psutil.process_iter():
             mem = p.memory_info()
-            
+
             # psutil throws a KeyError when the uid of a process is not associated with an user.
             try:
                 username = p.username()
@@ -349,6 +382,13 @@ class LocalService(object):
                 self.node.logs.remove_available(log.filename)
 
         return available_logs
+
+    def get_config(self):
+        config_reader = ConfigReader('/home/parallels/workspace/codespace/pythonobj/psdash/psdash/config.json')
+        return config_reader
+
+    def get_http(self):
+        return self.http
 
     def read_log(self, filename, session_key=None, seek_tail=False):
         log = self.node.logs.get(filename, key=session_key)
