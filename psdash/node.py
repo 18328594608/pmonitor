@@ -384,7 +384,9 @@ class LocalService(object):
         return available_logs
 
     def get_config(self):
-        config_reader = ConfigReader('/home/parallels/workspace/codespace/pythonobj/psdash/psdash/config.json')
+        current_dir = os.path.dirname(__file__)
+        file_path = os.path.join(current_dir, 'config.json')
+        config_reader = ConfigReader(file_path)
         return config_reader
 
     def get_http(self):
