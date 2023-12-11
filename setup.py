@@ -5,8 +5,6 @@ from setuptools import setup
 setup(
     name='psdash',
     version=__version__,
-    description='Linux system information web dashboard',
-    long_description='psdash is a system information web dashboard for linux using data mainly served by psutil',
     classifiers=[
         'Topic :: System :: Monitoring',
         'Topic :: System :: Logging',
@@ -20,21 +18,18 @@ setup(
     ],
     keywords='linux web dashboard',
     license='CC0',
-    ##packages=find_packages(exclude=['tests']),
-    include_package_data=True,
-    zip_safe=False,
+    packages=['psdash'],
+    package_data={'psdash': ['templates/*', 'static/*']},
     install_requires=[
-        'Flask==1.1.2',
-        'psutil==5.7.0',
+        'Flask==2.0.3',
+        'psutil==5.9.6',
         'glob2==0.7',
-        'gevent==20.6.2',
-        'zerorpc==0.6.1',
-        'netifaces==0.11.0',
+        'gevent==22.10.2',
+        'zerorpc==0.6.3',
+        'netifaces==0.10.4',
         'argparse',
         'requests'
     ],
-    ##test_suite='tests',
-    ##tests_require=['unittest2'],
     entry_points={
         'console_scripts': [
             'psdash = psdash.run:main'
