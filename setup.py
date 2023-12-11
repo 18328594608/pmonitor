@@ -1,6 +1,6 @@
 # coding=utf-8
 from psdash import __version__
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name='psdash',
