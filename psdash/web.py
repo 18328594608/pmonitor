@@ -12,7 +12,6 @@ from psdash.helpers import socket_families, socket_types
 logger = logging.getLogger('psdash.web')
 webapp = Blueprint('psdash', __name__, static_folder='static')
 
-
 def get_current_node():
     return current_app.psdash.get_node(g.node)
 
@@ -41,8 +40,8 @@ def inject_header_data():
     uptime = timedelta(seconds=sysinfo['uptime'])
     uptime = str(uptime).split('.')[0]
     return {
-        'os': sysinfo['os'].decode('utf-8'),
-        'hostname': sysinfo['hostname'].decode('utf-8'),
+        'os': sysinfo['os'],
+        'hostname': sysinfo['hostname'],
         'uptime': uptime
     }
 
@@ -106,9 +105,9 @@ def access_denied(e):
 @webapp.route('/')
 def index():
     sysinfo = current_service.get_sysinfo()
-
     netifs = current_service.get_network_interfaces().values()
-    netifs.sort(key=lambda x: x.get('bytes_sent'), reverse=True)
+    netifs_list = list(netifs)
+    netifs_list.sort(key=lambda x: x.get('bytes_sent'), reverse=True)
 
     data = {
         'load_avg': sysinfo['load_avg'],
@@ -118,11 +117,11 @@ def index():
         'disks': current_service.get_disks(),
         'cpu': current_service.get_cpu(),
         'users': current_service.get_users(),
-        'net_interfaces': netifs,
+        'net_interfaces': netifs_list,
         'page': 'overview',
-        'is_xhr': request.is_xhr
+        'is_xhr': request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     }
-
+    print(data)
     return render_template('index.html', **data)
 
 
@@ -144,6 +143,7 @@ def processes(sort='pid', order='asc', filter='user'):
         reverse=True if order != 'asc' else False
     )
 
+    print(procs)
     return render_template(
         'processes.html',
         processes=procs,
@@ -153,7 +153,7 @@ def processes(sort='pid', order='asc', filter='user'):
         num_procs=num_procs,
         num_user_procs=num_user_procs,
         page='processes',
-        is_xhr=request.is_xhr
+        is_xhr=request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     )
 
 
@@ -179,7 +179,7 @@ def process(pid, section):
         'process': current_service.get_process(pid),
         'section': section,
         'page': 'processes',
-        'is_xhr': request.is_xhr
+        'is_xhr': request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     }
 
     if section == 'environment':
@@ -188,7 +188,7 @@ def process(pid, section):
         whitelist = current_app.config.get('PSDASH_ENVIRON_WHITELIST')
         if whitelist:
             penviron = dict((k, v if k in whitelist else '*hidden by whitelist*') 
-                             for k, v in penviron.iteritems())
+                             for k, v in penviron.items())
 
         context['process_environ'] = penviron
     elif section == 'threads':
@@ -212,9 +212,8 @@ def process(pid, section):
 
 @webapp.route('/network')
 def view_networks():
-    netifs = current_service.get_network_interfaces().values()
+    netifs = list(current_service.get_network_interfaces().values())
     netifs.sort(key=lambda x: x.get('bytes_sent'), reverse=True)
-
     # {'key', 'default_value'}
     # An empty string means that no filtering will take place on that key
     form_keys = {
@@ -224,7 +223,7 @@ def view_networks():
         'state': 'LISTEN'
     }
 
-    form_values = dict((k, request.args.get(k, default_val)) for k, default_val in form_keys.iteritems())
+    form_values = dict((k, request.args.get(k, default_val)) for k, default_val in form_keys.items())
 
     for k in ('local_addr', 'remote_addr'):
         val = request.args.get(k, '')
@@ -253,7 +252,7 @@ def view_networks():
         socket_families=socket_families,
         socket_types=socket_types,
         states=states,
-        is_xhr=request.is_xhr,
+        is_xhr=request.headers.get('X-Requested-With') == 'XMLHttpRequest',
         num_conns=len(conns),
         **form_values
     )
@@ -262,14 +261,14 @@ def view_networks():
 @webapp.route('/disks')
 def view_disks():
     disks = current_service.get_disks(all_partitions=True)
-    io_counters = current_service.get_disks_counters().items()
+    io_counters = list(current_service.get_disks_counters().items())
     io_counters.sort(key=lambda x: x[1]['read_count'], reverse=True)
     return render_template(
         'disks.html',
         page='disks',
         disks=disks,
         io_counters=io_counters,
-        is_xhr=request.is_xhr
+        is_xhr=request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     )
 
 
@@ -282,7 +281,7 @@ def view_logs():
         'logs.html',
         page='logs',
         logs=available_logs,
-        is_xhr=request.is_xhr
+        is_xhr=request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     )
 
 
