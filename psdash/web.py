@@ -279,15 +279,26 @@ def view_logs():
     for value in arena_http_io:
         print(value)
 
+    servant_result ={}
     for monitor in servant_io:
+        result = {}
         data = current_service.get_http().fetch_data_get(monitor.get("monitor_io"))
+        id = monitor.get("id")
         data_list.append(data)
+        pairs = data.split(',')
+        for pair in pairs:
+            key, value = pair.split(':')
+            result[key] = value
+        servant_result["servant" + str(id)] = result
+
 
     print(data_list)
     return render_template(
         'matchengine.html',
-        data_list=data_list
+        servant_result=servant_result,
+        is_xhr=request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     )
+
 
 @webapp.route('/log')
 def view_log():

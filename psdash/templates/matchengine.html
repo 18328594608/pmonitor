@@ -1,14 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MATCHENGINE</title>
-</head>
-<body>
-    <ul>
-        {% for item in data_list %}
-            <li>{{ item }}</li>
+{% if not is_xhr|default(false) %}{% extends "base.html" %}{% endif -%}
+{% block content %}
+    <div id="dashboard">
+        {% for servant_id, servant_data in servant_result.items() %}
+            <div class="box matchengine">
+                <div class="box-header">
+                    <span>{{ servant_id }}</span>
+                </div>
+                <div class="box-content">
+                    <table class="table">
+                        {% for key, value in servant_data.items() %}
+                            <tr>
+                                <td class="label-col">{{ key }}</td>
+                                <td class="iowait">{{ value }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
         {% endfor %}
-    </ul>
-</body>
-</html>
+    </div>
+{% endblock %}
