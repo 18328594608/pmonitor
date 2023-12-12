@@ -295,6 +295,7 @@ def view_logs():
     print(data_list)
     return render_template(
         'matchengine.html',
+        page='logs',
         servant_result=servant_result,
         is_xhr=request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     )
